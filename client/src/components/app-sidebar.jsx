@@ -1,70 +1,98 @@
-"use client";
-
-import { Link } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarHeader,
+  SidebarGroupContent,
+  SidebarGroupAction,
+  SidebarGroupLabel,
+  SidebarMenuAction,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
-import { Home, User, Settings } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+import {
+  ChevronDown,
+  User2,
+  Plus,
+  Building,
+  Building2Icon,
+  Home,
+} from "lucide-react";
+
+import { useState } from "react";
 
 export function AppSidebar() {
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
+
   return (
     <Sidebar>
-      {/* Header */}
-      <SidebarHeader>
-        <h2 className="text-lg font-bold px-2">SEYAL</h2>
-      </SidebarHeader>
-
-      {/* Content */}
+      <SidebarHeader />
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
+        <Collapsible defaultOpen className="group/collapsible">
+          <SidebarGroup>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="cursor-pointer">
+                Navigation
+                <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              {isCollapsed ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton asChild>
+                      <a href="#">
+                        <Home />
+                      </a>
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Home</TooltipContent>
+                </Tooltip>
+              ) : (
                 <SidebarMenuButton asChild>
-                  <Link to="/">
-                    <Home className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Link>
+                  <a href="#">
+                    <Home />
+                    <span>Home</span>
+                  </a>
                 </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/profile">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+              )}
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
       </SidebarContent>
-
-      {/* Footer */}
       <SidebarFooter>
-        <p className="text-xs px-2">© 2026 SEYAL</p>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton>
+              <User2 className="mr-2" />
+              Sukesh
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
