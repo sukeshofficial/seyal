@@ -18,6 +18,12 @@ import {
   MenubarSeparator,
 } from "@/components/ui/menubar";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 import { Switch } from "@/components/ui/switch";
@@ -27,15 +33,34 @@ export function UserMenu({ isCollapsed, isDark, handleToggle }) {
     <div className="flex items-center justify-between w-full">
       <Menubar className="border-none bg-transparent">
         <MenubarMenu>
-          <MenubarTrigger asChild className="rounded-full">
-            <button className="flex gap-2 items-center rounded-full px-1 hover:bg-muted w-full">
-              <Avatar className="size-4 my-1">
-                <AvatarImage src="https://i.pravatar.cc/104" />
-                <AvatarFallback>SK</AvatarFallback>
-              </Avatar>
-              {!isCollapsed && <span>Sukesh</span>}
-            </button>
-          </MenubarTrigger>
+          {/* <MenubarTrigger asChild className="rounded-full"> */}
+          {isCollapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <MenubarTrigger asChild className="rounded-full">
+                  <button className="flex items-center justify-center rounded-full hover:bg-muted">
+                    <Avatar className="size-5 my-1 mr-[0.2px]">
+                      <AvatarImage src="https://i.pravatar.cc/104" />
+                      <AvatarFallback>SK</AvatarFallback>
+                    </Avatar>
+                  </button>
+                </MenubarTrigger>
+              </TooltipTrigger>
+
+              <TooltipContent side="right">Sukesh</TooltipContent>
+            </Tooltip>
+          ) : (
+            <MenubarTrigger asChild className="rounded-full">
+              <button className="flex gap-2 items-center rounded-full px-2 py-1 hover:bg-muted w-full">
+                <Avatar className="size-5">
+                  <AvatarImage src="https://i.pravatar.cc/104" />
+                  <AvatarFallback>SK</AvatarFallback>
+                </Avatar>
+                <span>Sukesh</span>
+              </button>
+            </MenubarTrigger>
+          )}
+          {/* </MenubarTrigger> */}
 
           <MenubarContent
             side="right"
@@ -64,17 +89,17 @@ export function UserMenu({ isCollapsed, isDark, handleToggle }) {
               Upgrade to Pro
             </MenubarItem>
 
-            <MenubarItem  className="rounded-full">
+            <MenubarItem className="rounded-full">
               <Settings className="mr-2 size-4" />
               Account
             </MenubarItem>
 
-            <MenubarItem  className="rounded-full">
+            <MenubarItem className="rounded-full">
               <CreditCard className="mr-2 size-4" />
               Billing
             </MenubarItem>
 
-            <MenubarItem  className="rounded-full">
+            <MenubarItem className="rounded-full">
               <Bell className="mr-2 size-4" />
               Notifications
             </MenubarItem>
@@ -99,9 +124,7 @@ export function UserMenu({ isCollapsed, isDark, handleToggle }) {
               </>
             )}
 
-            <MenubarItem
-              className="rounded-full text-red-500 hover:bg-red-500/10 data-[highlighted]:bg-red-500/10 data-[highlighted]:text-red-600 [&_svg]:text-red-500"
-            >
+            <MenubarItem className="rounded-full text-red-500 hover:bg-red-500/10 data-[highlighted]:bg-red-500/10 data-[highlighted]:text-red-600 [&_svg]:text-red-500">
               <LogOut className="mr-2 size-4 stroke-red-500" />
               Log out
             </MenubarItem>
