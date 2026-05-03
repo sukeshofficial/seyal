@@ -7,19 +7,11 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarGroupContent,
-  SidebarGroupAction,
   SidebarGroupLabel,
-  SidebarMenuAction,
   useSidebar,
 } from "@/components/ui/sidebar";
 
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 
 import {
   Collapsible,
@@ -33,20 +25,27 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import {
-  ChevronDown,
-  User2,
-  Plus,
-  Building,
-  Building2Icon,
-  Home,
-} from "lucide-react";
+import { ChevronDown, User2, Home, BookmarkIcon } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+
+    const saved = localStorage.getItem("theme");
+    if (saved) return saved === "dark";
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("dark", isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }, [isDark]);
 
   return (
     <Sidebar>
@@ -87,10 +86,24 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton>
-              <User2 className="mr-2" />
-              Sukesh
-            </SidebarMenuButton>
+            {isCollapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton>
+                    <User2 className="mr-2" />
+                    Sukesh
+                    <Switch checked={isDark} onCheckedChange={setIsDark} />
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                <TooltipContent side="right">User</TooltipContent>
+              </Tooltip>
+            ) : (
+              <SidebarMenuButton>
+                <User2 className="mr-2" />
+                Sukesh
+                <Switch checked={isDark} onCheckedChange={setIsDark} />
+              </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
