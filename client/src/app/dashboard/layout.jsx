@@ -1,5 +1,15 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
+
+import { Kbd } from "@/components/ui/kbd";
+
+import { AppSidebar } from "@/components/app-sidebar";
 
 export default function Layout({ children }) {
   return (
@@ -8,10 +18,21 @@ export default function Layout({ children }) {
         <AppSidebar />
 
         <main className="flex-1">
-          <SidebarTrigger />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <SidebarTrigger />
+            </TooltipTrigger>
+            <TooltipContent side="right" className="flex items-center gap-2">
+              Toggle Sidebar
+              <span className="flex items-center gap-1">
+                <Kbd>Ctrl</Kbd> + <Kbd>B</Kbd>
+              </span>
+            </TooltipContent>
+          </Tooltip>
+
           {children}
         </main>
       </div>
     </SidebarProvider>
-  )
+  );
 }

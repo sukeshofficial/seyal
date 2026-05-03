@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { ChevronDown, User2, Home, BookmarkIcon } from "lucide-react";
+import { ChevronDown, User2, Home, SunIcon, MoonIcon } from "lucide-react";
 
 import { useEffect, useState } from "react";
 
@@ -36,16 +36,35 @@ export function AppSidebar() {
     if (typeof window === "undefined") return false;
 
     const saved = localStorage.getItem("theme");
-    if (saved) return saved === "dark";
+    const dark = saved
+      ? saved === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.classList.toggle("dark", dark);
+    return dark;
   });
+  const [showLabel, setShowLabel] = useState(false);
+
+  const handleToggle = (value) => {
+    setIsDark(value);
+    setShowLabel(true);
+  };
 
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle("dark", isDark);
     localStorage.setItem("theme", isDark ? "dark" : "light");
   }, [isDark]);
+
+  useEffect(() => {
+    if (!showLabel) return;
+
+    const timer = setTimeout(() => {
+      setShowLabel(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [showLabel]);
 
   return (
     <Sidebar>
@@ -89,19 +108,48 @@ export function AppSidebar() {
             {isCollapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <SidebarMenuButton>
-                    <User2 className="mr-2" />
-                    Sukesh
-                    <Switch checked={isDark} onCheckedChange={setIsDark} />
+                  <SidebarMenuButton className="flex items-center gap-2">
+                    <User2 />
+                    <span>Sukesh</span>
+                    <Switch
+                      checked={isDark}
+                      onCheckedChange={setIsDark}
+                      className="ml-auto"
+                    />
                   </SidebarMenuButton>
                 </TooltipTrigger>
                 <TooltipContent side="right">User</TooltipContent>
               </Tooltip>
             ) : (
-              <SidebarMenuButton>
-                <User2 className="mr-2" />
-                Sukesh
-                <Switch checked={isDark} onCheckedChange={setIsDark} />
+              <SidebarMenuButton className="flex items-center gap-2">
+                <User2 />
+                <span>Sukesh</span>
+
+                <div className="ml-auto flex items-center gap-2">
+                  {/* {showLabel && (
+                    <span className="text-sm transition-opacity duration-300">
+                      {isDark ? "Dark" : "Light"}
+                    </span>
+                  )} */}
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-2">
+                        <SunIcon className="size-4" />
+
+                        <Switch
+                          checked={isDark}
+                          onCheckedChange={handleToggle}
+                        />
+
+                        <MoonIcon className="size-4 text-muted-foreground" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      {isDark ? "Switch to Light mode" : "Switch to Dark mode"}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </SidebarMenuButton>
             )}
           </SidebarMenuItem>
