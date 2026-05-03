@@ -11,8 +11,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-import { Switch } from "@/components/ui/switch";
-
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -25,13 +23,39 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { ChevronDown, User2, Home, SunIcon, MoonIcon } from "lucide-react";
+import { UserMenu } from "../menu/UserMenu";
 
-import { useEffect, useState } from "react";
+import { ChevronDown, Home } from "lucide-react";
+
+import { createContext, useEffect, useState } from "react";
+
+const SidebarContext = createContext();
+
+export function SidebarProvider({ children }) {
+  const [state, setState] = useState("expanded");
+
+  const [isDark, setIsDark] = useState(false);
+
+  const handleToggle = (value) => {
+    setIsDark(value);
+  };
+
+  return (
+    <SidebarContext.Provider
+      value={{
+        state,
+        isDark,
+        handleToggle,
+      }}
+    >
+      {children}
+    </SidebarContext.Provider>
+  );
+}
 
 export function AppSidebar() {
-  const { state } = useSidebar();
-  const isCollapsed = state === "collapsed";
+  const { open, setOpen } = useSidebar();
+  const isCollapsed = !open;
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === "undefined") return false;
 
@@ -65,6 +89,18 @@ export function AppSidebar() {
 
     return () => clearTimeout(timer);
   }, [showLabel]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("sidebar");
+
+    if (saved !== null) {
+      setOpen(saved === "true");
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("sidebar", open);
+  }, [open]);
 
   return (
     <Sidebar>
@@ -105,53 +141,11 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            {isCollapsed ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarMenuButton className="flex items-center gap-2">
-                    <User2 />
-                    <span>Sukesh</span>
-                    <Switch
-                      checked={isDark}
-                      onCheckedChange={setIsDark}
-                      className="ml-auto"
-                    />
-                  </SidebarMenuButton>
-                </TooltipTrigger>
-                <TooltipContent side="right">User</TooltipContent>
-              </Tooltip>
-            ) : (
-              <SidebarMenuButton className="flex items-center gap-2">
-                <User2 />
-                <span>Sukesh</span>
-
-                <div className="ml-auto flex items-center gap-2">
-                  {/* {showLabel && (
-                    <span className="text-sm transition-opacity duration-300">
-                      {isDark ? "Dark" : "Light"}
-                    </span>
-                  )} */}
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-2">
-                        <SunIcon className="size-4" />
-
-                        <Switch
-                          checked={isDark}
-                          onCheckedChange={handleToggle}
-                        />
-
-                        <MoonIcon className="size-4 text-muted-foreground" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      {isDark ? "Switch to Light mode" : "Switch to Dark mode"}
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </SidebarMenuButton>
-            )}
+            <UserMenu
+              isCollapsed={isCollapsed}
+              isDark={isDark}
+              handleToggle={handleToggle}
+            />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
