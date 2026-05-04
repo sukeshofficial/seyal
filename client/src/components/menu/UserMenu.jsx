@@ -84,22 +84,22 @@ export function UserMenu({ isCollapsed, isDark, handleToggle }) {
 
             <MenubarSeparator />
 
-            <MenubarItem className="rounded-full">
+            <MenubarItem className="rounded-full cursor-pointer">
               <Sparkles className="mr-2 size-4" />
               Upgrade to Pro
             </MenubarItem>
 
-            <MenubarItem className="rounded-full">
+            <MenubarItem className="rounded-full cursor-pointer">
               <Settings className="mr-2 size-4" />
               Account
             </MenubarItem>
 
-            <MenubarItem className="rounded-full">
+            <MenubarItem className="rounded-full cursor-pointer">
               <CreditCard className="mr-2 size-4" />
               Billing
             </MenubarItem>
 
-            <MenubarItem className="rounded-full">
+            <MenubarItem className="rounded-full cursor-pointer">
               <Bell className="mr-2 size-4" />
               Notifications
             </MenubarItem>
@@ -117,14 +117,14 @@ export function UserMenu({ isCollapsed, isDark, handleToggle }) {
                     <span>{isDark ? "Dark Mode" : "Light Mode"}</span>
                   </div>
 
-                  <Switch checked={isDark} onCheckedChange={handleToggle} />
+                  <Switch checked={isDark} onCheckedChange={handleToggle} className="cursor-pointer"/>
                 </MenubarItem>
 
                 <MenubarSeparator />
               </>
             )}
 
-            <MenubarItem className="rounded-full text-red-500 hover:bg-red-500/10 data-[highlighted]:bg-red-500/10 data-[highlighted]:text-red-600 [&_svg]:text-red-500">
+            <MenubarItem className="rounded-full text-red-500 hover:bg-red-500/10 data-[highlighted]:bg-red-500/10 data-[highlighted]:text-red-600 [&_svg]:text-red-500 cursor-pointer">
               <LogOut className="mr-2 size-4 stroke-red-500" />
               Log out
             </MenubarItem>
