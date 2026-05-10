@@ -6,6 +6,9 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
 
+import connectDB from "../src/config/db.config.js";
+import { passport, configurePassport } from "./config/passport.config.js";
+
 dotenv.config();
 
 const server = express();
@@ -21,11 +24,11 @@ server.use(helmet());
 // Logger
 const logger = pinoHttp({
   transport: {
-    target: 'pino-pretty',
+    target: "pino-pretty",
     options: {
-      colorize: true
-    }
-  }
+      colorize: true,
+    },
+  },
 });
 
 server.use(logger);
@@ -33,12 +36,17 @@ server.use(logger);
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100, 
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-server.use(limiter)
+server.use(limiter);
+
+// Passport setup
+server.use(passport.initialize());
+
+configurePassport();
 
 // Liveness check (is server running?)
 server.get("/health", (req, res) => {
@@ -89,15 +97,13 @@ server.get("/", (req, res) => {
 // ---- DB Connection + Server Start ---- //
 async function startServer() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-
-    console.log("DB Connected ✅");
+    connectDB();
 
     server.listen(PORT, () => {
       console.log(`Server running: http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("DB connection failed ❌", error);
+    console.error("Server not connected", error);
     process.exit(1);
   }
 }

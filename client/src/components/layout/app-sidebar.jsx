@@ -23,35 +23,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { UserMenu } from "../menu/UserMenu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
+import { UserMenu } from "./UserMenu";
 import { ChevronDown, Home } from "lucide-react";
-
-import { createContext, useEffect, useState } from "react";
-
-const SidebarContext = createContext();
-
-export function SidebarProvider({ children }) {
-  const [state, setState] = useState("expanded");
-
-  const [isDark, setIsDark] = useState(false);
-
-  const handleToggle = (value) => {
-    setIsDark(value);
-  };
-
-  return (
-    <SidebarContext.Provider
-      value={{
-        state,
-        isDark,
-        handleToggle,
-      }}
-    >
-      {children}
-    </SidebarContext.Provider>
-  );
-}
+import { useEffect, useState } from "react";
 
 export function AppSidebar() {
   const { open, setOpen } = useSidebar();
@@ -104,7 +85,57 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader />
+      {isCollapsed ? (
+        <Tooltip>
+          <TooltipTrigger>
+            <SidebarHeader className="mt-2">
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton className="h-14 hover:bg-transparent data-[active=true]:bg-transparent">
+                    <div className="-ml-1 flex items-center gap-3">
+                      <div className="h-6 w-6 overflow-hidden rounded-full bg-white flex items-center justify-center">
+                        <img
+                          src="/SEYAL-LOGO.svg"
+                          alt="SEYAL Logo"
+                          className="h-full w-full object-cover cursor-pointer"
+                        />
+                      </div>
+
+                      <span className="text-lg font-semibold tracking-tight">
+                        SEYAL
+                      </span>
+                    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarHeader>
+          </TooltipTrigger>
+          <TooltipContent side="right">SEYAL</TooltipContent>
+        </Tooltip>
+      ) : (
+        <SidebarHeader className="mt-2">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton className="h-14 cursor-pointer hover:bg-transparent data-[active=true]:bg-transparent">
+                <div className="-ml-1 flex items-center gap-3">
+                  <div className="h-6 w-6 overflow-hidden rounded-full bg-white flex items-center justify-center">
+                    <img
+                      src="/SEYAL-LOGO.svg"
+                      alt="SEYAL Logo"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+
+                  <span className="text-lg font-semibold tracking-tight">
+                    SEYAL
+                  </span>
+                </div>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+      )}
+
       <SidebarContent>
         <Collapsible defaultOpen className="group/collapsible">
           <SidebarGroup>

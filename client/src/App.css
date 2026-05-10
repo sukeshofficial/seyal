@@ -1,0 +1,39 @@
+.app-container {
+  @apply p-6;
+}
+
+.loading-fallback {
+  @apply flex h-screen items-center justify-center w-full;
+}
+
+.error-container {
+  @apply flex h-screen w-full items-center justify-center p-6 bg-background;
+}
+.error-content {
+  @apply max-w-md space-y-4 text-center;
+}
+.error-title {
+  @apply text-2xl font-bold tracking-tight text-destructive;
+}
+.error-message {
+  @apply text-sm text-muted-foreground break-words;
+}
+.error-btn {
+  @apply mt-4 px-4 py-2 border border-border rounded-md hover:bg-muted font-medium cursor-pointer transition-colors;
+}
+
+.not-found-container {
+  @apply flex flex-col items-center justify-center min-h-screen p-6 text-center;
+}
+.not-found-title {
+  @apply text-6xl font-bold font-mono;
+}
+.not-found-subtitle {
+  @apply mt-4 text-xl font-semibold;
+}
+.not-found-desc {
+  @apply mt-2 text-muted-foreground max-w-sm;
+}
+.not-found-link {
+  @apply mt-8 px-6 py-2 bg-primary text-primary-foreground rounded-md transition-colors inline-block;
+}

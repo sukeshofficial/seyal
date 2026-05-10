@@ -9,7 +9,7 @@ import {
 
 import { Kbd } from "@/components/ui/kbd";
 
-import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { AppSidebar } from "@/components/layout/app-sidebar";
 
 export default function Layout({ children }) {
   return (
@@ -20,7 +20,7 @@ export default function Layout({ children }) {
         <main className="flex-1">
           <Tooltip>
             <TooltipTrigger asChild>
-              <SidebarTrigger />
+              <SidebarTrigger className="ml-2 mt-4 cursor-e-resize" />
             </TooltipTrigger>
             <TooltipContent side="right" className="flex items-center gap-2">
               Toggle Sidebar

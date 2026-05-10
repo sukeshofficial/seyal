@@ -66,6 +66,7 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  --premium-gradient: linear-gradient(to right, #8b5cf6, #d946ef, #f59e0b);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -127,10 +128,62 @@
       color 0.2s ease,
       border-color 0.2s ease;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-mono;
+  }
+}
+
+@layer components {
+  .app-container {
+    @apply h-screen w-full overflow-hidden bg-background text-foreground;
+  }
+
+  .loading-fallback {
+    @apply flex h-screen items-center justify-center w-full;
+  }
+
+  .error-container {
+    @apply flex h-screen w-full items-center justify-center p-6 bg-background;
+  }
+
+  .error-content {
+    @apply max-w-md space-y-4 text-center;
+  }
+
+  .error-title {
+    @apply text-2xl font-bold tracking-tight text-destructive;
+  }
+
+  .error-message {
+    @apply text-sm text-muted-foreground break-words;
+  }
+
+  .error-btn {
+    @apply mt-4 px-4 py-2 border border-border rounded-md hover:bg-muted font-medium cursor-pointer transition-colors;
+  }
+
+  .not-found-container {
+    @apply flex flex-col items-center justify-center min-h-screen p-6 text-center;
+  }
+
+  .not-found-title {
+    @apply text-6xl font-bold font-mono;
+  }
+
+  .not-found-subtitle {
+    @apply mt-4 text-xl font-semibold;
+  }
+
+  .not-found-desc {
+    @apply mt-2 text-muted-foreground max-w-sm;
+  }
+
+  .not-found-link {
+    @apply mt-8 px-6 py-2 bg-primary text-primary-foreground rounded-md transition-colors inline-block;
   }
 }
