@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-import { nameValidator, emailRegex } from "../validations/users.validation.js";
+import { nameValidator, emailRegex } from "../validations/users.validaiton.js";
 
 const { Schema } = mongoose;
 
@@ -64,7 +64,9 @@ const userSchema = new Schema(
     profilePicture: {
       type: String,
 
-      default: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+      // default: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+      default:
+        "blob:chrome-untrusted://image-magnify/90c6e005-48b2-4d3d-baa8-9150ac27ab2d",
     },
 
     providers: {
