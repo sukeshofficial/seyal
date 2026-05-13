@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
+import cookieParser from "cookie-parser";
 
 import { passport, configurePassport } from "./config/passport.config.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
@@ -14,6 +15,7 @@ const app = express();
 
 // ---------------- Middleware ---------------- //
 app.use(express.json());
+app.use(cookieParser());
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
   : ["http://localhost:5173", "http://localhost:3000"];

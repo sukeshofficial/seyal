@@ -20,7 +20,9 @@ const buildSafeUser = (userDoc) => {
 };
 
 export const signupService = async (payload) => {
-  const session = await mongoose.startSession();
+  const isProduction = process.env.NODE_ENV === "produtction";
+
+  const session = isProduction ? await mongoose.startSession() : null;
 
   try {
     const { name, username, email, password } = payload;
@@ -29,7 +31,9 @@ export const signupService = async (payload) => {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedUsername = username.trim().toLowerCase();
 
-    session.startTransaction();
+    if (isProduction) {
+      session.startTransaction();
+    }
 
     // 1. Check Duplicate Email
     const existingEmail = await User.findOne({
@@ -64,18 +68,14 @@ export const signupService = async (payload) => {
             first: name.first.trim(),
             last: name.last.trim(),
           },
-
           username: normalizedUsername,
           email: normalizedEmail,
-
           password: hashedPassword,
-
           providers: ["local"],
-
           isVerified: false,
         },
       ],
-      { session },
+      isProduction ? { session } : {},
     );
 
     const user = createdUsers[0];
@@ -98,11 +98,13 @@ export const signupService = async (payload) => {
           expiresAt: new Date(Date.now() + OTP_EXPIRY_MS),
         },
       ],
-      { session },
+      isProduction ? { session } : {},
     );
 
     // Commit DB Transaction
-    await session.commitTransaction();
+    if (isProduction) {
+      await session.commitTransaction();
+    }
 
     // 8. Send Email
     try {
@@ -121,12 +123,9 @@ export const signupService = async (payload) => {
       return {
         statusCode: 201,
         success: true,
-
         message:
           "Account created but verification email could not be sent. Please resend OTP.",
-
         requiresOtpResend: true,
-
         data: {
           id: user._id,
           email: user.email,
@@ -149,7 +148,7 @@ export const signupService = async (payload) => {
       },
     };
   } catch (error) {
-    if (session.inTransaction()) {
+    if (isProduction && session?.inTransaction()) {
       await session.abortTransaction();
     }
 
@@ -160,9 +159,11 @@ export const signupService = async (payload) => {
       if (field === "email") {
         throw new AppError(409, "Email already exists");
       }
+
       if (field === "username") {
         throw new AppError(409, "Username already exists");
       }
+
       throw new AppError(409, "Duplicate field value");
     }
 
@@ -172,7 +173,7 @@ export const signupService = async (payload) => {
 
     throw new AppError(500, error.message || "Signup failed");
   } finally {
-    session.endSession();
+    session?.endSession();
   }
 };
 
