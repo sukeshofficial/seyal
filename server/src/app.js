@@ -14,24 +14,30 @@ import authRoutes from "./authentication/routes/auth.routes.js";
 const app = express();
 
 // ---------------- Middleware ---------------- //
-app.use(express.json());
-app.use(cookieParser());
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : [process.env.CLIENT_URL || "http://localhost:5173"];
+  ? process.env.ALLOWED_ORIGINS.split(",").map(origin => origin.trim())
+  : [process.env.CLIENT_URL || "http://localhost:5173", "https://seyal.forgegrid.in"];
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`Blocked by CORS: origin ${origin} not in allowed list:`, allowedOrigins);
+      callback(new Error('Not allowed by CORS'), false);
     }
-    return callback(null, true);
   },
-  credentials: true
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+  optionsSuccessStatus: 200
 }));
+
+app.use(express.json());
+app.use(cookieParser());
 
 app.use(helmet());
 
