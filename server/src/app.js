@@ -15,15 +15,19 @@ const app = express();
 
 // ---------------- Middleware ---------------- //
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",").map(origin => origin.trim())
-  : [process.env.CLIENT_URL || "http://localhost:5173", "https://seyal.forgegrid.in"];
+  ? process.env.ALLOWED_ORIGINS.split(",").map(origin => origin.trim().replace(/\/$/, ""))
+  : [
+    (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/$/, ""),
+    "https://seyal.forgegrid.in"
+  ];
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    const normalizedOrigin = origin.replace(/\/$/, "");
+    if (allowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
     } else {
       console.warn(`Blocked by CORS: origin ${origin} not in allowed list:`, allowedOrigins);
@@ -39,7 +43,9 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // Logger
 const logger = pinoHttp({
