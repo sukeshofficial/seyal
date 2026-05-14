@@ -25,7 +25,7 @@ export const signupService = async (payload) => {
   const session = isProduction ? await mongoose.startSession() : null;
 
   try {
-    const { name, username, email, password } = payload;
+    const { name, username, email, password, profilePicture } = payload;
 
     // Normalize data
     const normalizedEmail = email.trim().toLowerCase();
@@ -71,6 +71,7 @@ export const signupService = async (payload) => {
           username: normalizedUsername,
           email: normalizedEmail,
           password: hashedPassword,
+          profilePicture: profilePicture || undefined,
           providers: ["local"],
           isVerified: false,
         },

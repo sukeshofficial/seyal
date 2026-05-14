@@ -17,8 +17,10 @@ import {
     meController,
     oauthCallbackController,
     getAvatarController,
+    uploadAvatarController,
 } from "../controllers/auth.controller.js";
 import { forgotPasswordSchema, resetPasswordSchema } from "../validations/reset-password.validation.js";
+import { upload } from "../../middlewares/multer.middleware.js";
 
 const router = Router();
 
@@ -84,6 +86,13 @@ router.post("/reset-password", validate(resetPasswordSchema), resetPasswordContr
  * @access  Public
  */
 router.get("/avatar/:identifier", getAvatarController);
+
+/**
+ * @route   POST /api/v1/auth/upload-avatar
+ * @desc    Upload user profile picture to Cloudinary
+ * @access  Public
+ */
+router.post("/upload-avatar", upload.single("avatar"), uploadAvatarController);
 
 /**
  * @route   GET /api/v1/auth/me

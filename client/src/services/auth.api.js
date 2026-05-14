@@ -168,6 +168,27 @@ export const getPublicAvatar = async (identifier) => {
     }
 };
 
+/**
+ * Upload Avatar to Cloudinary
+ * @param {File} file - The file to upload
+ * @returns {Promise} - Cloudinary URL
+ */
+export const uploadAvatar = async (file) => {
+    try {
+        const formData = new FormData();
+        formData.append("avatar", file);
+
+        const response = await authApi.post("/auth/upload-avatar", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { message: "Avatar upload failed" };
+    }
+};
+
 export default {
     signupUser,
     loginUser,
@@ -178,4 +199,5 @@ export default {
     forgotPassword,
     resetPassword,
     getPublicAvatar,
+    uploadAvatar,
 };

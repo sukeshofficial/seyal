@@ -6,7 +6,7 @@ import { toast } from "react-hot-toast";
 import { LoaderIcon, User, Mail, AtSign, ArrowRight, Check } from "lucide-react";
 
 import { signupSchema } from "@/validations/auth.schema";
-import { signupUser } from "@/services/auth.api";
+import { signupUser, uploadAvatar } from "@/services/auth.api";
 import ProfileUpload from "./ProfileUpload";
 import SocialAuth from "./SocialAuth";
 import PasswordInput from "./PasswordInput";
@@ -27,7 +27,30 @@ const SignupForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otpModal, setOtpModal] = useState({ isOpen: false, email: "" });
   const [btnState, setBtnState] = useState('idle');
+  const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
+
+  const handleImageUpload = async (file) => {
+    if (!file) {
+      form.setValue("profilePicture", null);
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const response = await uploadAvatar(file);
+      if (response.success && response.data.url) {
+        form.setValue("profilePicture", response.data.url);
+        toast.success("Profile picture secured!");
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error(error.message || "Failed to upload image. Please try again.");
+      form.setValue("profilePicture", null);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const form = useForm({
     resolver: zodResolver(signupSchema),
@@ -215,7 +238,8 @@ const SignupForm = () => {
                   <FormItem>
                     <FormControl>
                       <ProfileUpload
-                        onImageSelect={(file) => field.onChange(file)}
+                        onImageSelect={handleImageUpload}
+                        isUploading={isUploading}
                         error={form.formState.errors.profilePicture?.message}
                         compact
                       />

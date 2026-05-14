@@ -12,6 +12,7 @@ import getPublicAvatarService from "../services/public-profile.service.js";
 import RefreshToken from "../models/refresh-token.model.js";
 import generateTokens from "../../utils/generateTokens.js";
 import jwtConfig from "../../config/jwt.config.js";
+import { uploadOnCloudinary } from "../../utils/cloudinary.js";
 
 export const signupController = async (req, res, next) => {
   try {
@@ -119,12 +120,14 @@ export const loginController = async (req, res, next) => {
         httpOnly: true,
         secure: isProduction,
         sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: data.expiryMs || 7 * 24 * 60 * 60 * 1000,
       });
 
-      // Remove tokens from JSON response
+      // Remove tokens and metadata from JSON response
       delete data.accessToken;
       delete data.refreshToken;
+      delete data.expiryMs;
+      delete data.rememberMe;
     }
 
     return res.status(statusCode).json({
@@ -299,6 +302,38 @@ export const resetPasswordController = async (req, res, next) => {
   }
 };
 
+export const uploadAvatarController = async (req, res, next) => {
+  try {
+    const avatarLocalPath = req.file?.path;
+
+    if (!avatarLocalPath) {
+      return res.status(400).json({
+        success: false,
+        message: "Avatar file is required",
+      });
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+    if (!avatar) {
+      return res.status(500).json({
+        success: false,
+        message: "Error while uploading avatar to Cloudinary",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Avatar uploaded successfully",
+      data: {
+        url: avatar.secure_url,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getAvatarController = async (req, res, next) => {
   try {
     const { identifier } = req.params;
@@ -330,4 +365,5 @@ export default {
   meController,
   oauthCallbackController,
   getAvatarController,
+  uploadAvatarController,
 };

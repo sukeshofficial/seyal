@@ -1,9 +1,9 @@
 import React, { useState, useRef } from "react";
-import { Camera, Upload, User, X } from "lucide-react";
+import { Camera, Upload, User, X, LoaderIcon } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
-const ProfileUpload = ({ onImageSelect, error, compact = false }) => {
+const ProfileUpload = ({ onImageSelect, error, compact = false, isUploading = false }) => {
     const [preview, setPreview] = useState(null);
     const fileInputRef = useRef(null);
 
@@ -38,11 +38,11 @@ const ProfileUpload = ({ onImageSelect, error, compact = false }) => {
                     error ? "ring-red-500/20" : "ring-white/5 hover:ring-white/10",
                     "rounded-full p-1"
                 )}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => !isUploading && fileInputRef.current?.click()}
             >
                 <Avatar className={cn("border-2 border-white/10 shadow-2xl", compact ? "h-20 w-20" : "h-28 w-28")}>
                     {preview ? (
-                        <AvatarImage src={preview} className="object-cover" />
+                        <AvatarImage src={preview} className={cn("object-cover", isUploading && "opacity-40 blur-sm")} />
                     ) : (
                         <AvatarFallback className="bg-zinc-900 border-2 border-dashed border-zinc-700">
                             <User className={cn("text-zinc-600", compact ? "h-7 w-7" : "h-10 w-10")} />
@@ -50,8 +50,18 @@ const ProfileUpload = ({ onImageSelect, error, compact = false }) => {
                     )}
                 </Avatar>
 
+                {/* Uploading Spinner */}
+                {isUploading && (
+                    <div className="absolute inset-0 flex items-center justify-center z-50">
+                        <LoaderIcon className="h-8 w-8 text-indigo-400 animate-spin" />
+                    </div>
+                )}
+
                 {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                <div className={cn(
+                    "absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]",
+                    isUploading && "hidden"
+                )}>
                     <Camera className="h-8 w-8 text-white animate-in slide-in-from-bottom-2 duration-300" />
                 </div>
 

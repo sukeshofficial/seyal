@@ -166,15 +166,26 @@ const LoginForm = () => {
                         />
 
                         {/* Remember Me */}
-                        <div className="flex items-center space-x-2">
-                            <Checkbox id="remember" className="border-zinc-800 rounded-full data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
-                            <label
-                                htmlFor="remember"
-                                className="text-[11px] font-bold uppercase text-zinc-500 tracking-wider cursor-pointer"
-                            >
-                                Remember me for 30 days
-                            </label>
-                        </div>
+                        <FormField
+                            control={form.control}
+                            name="rememberMe"
+                            render={({ field }) => (
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id="remember"
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        className="border-zinc-800 rounded-full data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                                    />
+                                    <label
+                                        htmlFor="remember"
+                                        className="text-[11px] font-bold uppercase text-zinc-500 tracking-wider cursor-pointer"
+                                    >
+                                        Remember me for 30 days
+                                    </label>
+                                </div>
+                            )}
+                        />
 
                         <div className={`transition-all duration-400 flex justify-center ${btnState === 'idle' ? 'w-full' : 'w-full'}`}>
                             <Button

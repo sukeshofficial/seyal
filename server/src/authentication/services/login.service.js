@@ -53,11 +53,16 @@ export const loginService = async (payload, metadata) => {
         const hashedRefreshToken = await bcrypt.hash(refreshToken, BCRYPT_SALT_ROUNDS);
 
         // 6. Save Session (Refresh Token)
-        // Calculate expiry: default to 7 days if not a number
-        const refreshExpiresIn = jwtConfig.refresh.expiresIn || "7d";
-        let expiryMs = 7 * 24 * 60 * 60 * 1000; // Default 7 days
+        const { rememberMe } = payload;
 
-        if (typeof refreshExpiresIn === "number") {
+        // Default expiry from config or 7 days
+        const refreshExpiresIn = jwtConfig.refresh.expiresIn || "7d";
+        let expiryMs = 7 * 24 * 60 * 60 * 1000;
+
+        if (rememberMe) {
+            // Overwrite with 30 days if rememberMe is true
+            expiryMs = 30 * 24 * 60 * 60 * 1000;
+        } else if (typeof refreshExpiresIn === "number") {
             expiryMs = refreshExpiresIn;
         } else if (typeof refreshExpiresIn === "string") {
             const unit = refreshExpiresIn.slice(-1);
@@ -93,6 +98,8 @@ export const loginService = async (payload, metadata) => {
                 accessToken,
                 refreshToken,
                 user: userObj,
+                rememberMe,
+                expiryMs,
             },
         };
     } catch (error) {
