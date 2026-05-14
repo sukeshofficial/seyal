@@ -316,6 +316,7 @@ export const uploadAvatarController = async (req, res, next) => {
     const avatar = await uploadOnCloudinary(avatarLocalPath);
 
     if (!avatar) {
+      console.error("Upload failed: avatar is null. Check Cloudinary config.");
       return res.status(500).json({
         success: false,
         message: "Error while uploading avatar to Cloudinary",
