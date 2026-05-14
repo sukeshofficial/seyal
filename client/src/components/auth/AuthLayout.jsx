@@ -2,10 +2,24 @@ import React from "react";
 import AuthBranding from "./AuthBranding";
 import { Toaster } from "react-hot-toast";
 import { Shield } from "lucide-react";
+import LightRays from "../ui/LightRays";
 
 const AuthLayout = ({ children }) => {
     return (
-        <div className="h-[100dvh] max-h-screen grid lg:grid-cols-[4fr_6fr] bg-zinc-950 overflow-hidden">
+        <div className="relative h-[100dvh] max-h-screen grid lg:grid-cols-[4fr_6fr] bg-zinc-950 overflow-hidden">
+            {/* Background Light Rays */}
+            <div className="md:pl-125 pl-0 absolute inset-0 z-0 opacity-40 pointer-events-none">
+                <LightRays
+                    raysOrigin="top-center"
+                    raysColor="#6366f1"
+                    raysSpeed={0.8}
+                    lightSpread={0.7}
+                    rayLength={1.5}
+                    followMouse={true}
+                    mouseInfluence={0.2}
+                />
+            </div>
+
             <Toaster
                 position="top-center"
                 toastOptions={{
@@ -30,10 +44,12 @@ const AuthLayout = ({ children }) => {
             />
 
             {/* Left Branding Section */}
-            <AuthBranding />
+            <div className="relative z-10">
+                <AuthBranding />
+            </div>
 
             {/* Right Form Section */}
-            <div className="relative flex flex-col items-center p-4 lg:px-8 lg:py-6 overflow-hidden">
+            <div className="relative z-10 flex flex-col items-center p-4 lg:px-8 lg:py-6 overflow-hidden">
                 {/* Mobile Header (Hidden on Laptop) */}
                 <div className="lg:hidden shrink-0 mt-2 mb-6 flex items-center gap-3">
                     <div className="h-9 w-9 overflow-hidden rounded-xl bg-white p-1.5 shadow-xl shadow-white/5 ring-1 ring-white/10">
