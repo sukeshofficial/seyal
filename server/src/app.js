@@ -13,6 +13,9 @@ import authRoutes from "./authentication/routes/auth.routes.js";
 
 const app = express();
 
+// Trust proxy for Vercel
+app.set('trust proxy', 1);
+
 // ---------------- Middleware ---------------- //
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map(origin => origin.trim().replace(/\/$/, ""))

@@ -71,8 +71,8 @@ export const verifyOtpController = async (req, res, next) => {
       // 3. Set Cookies
       const cookieOptions = {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: "strict",
+        secure: true, // Must be true for SameSite: None
+        sameSite: "none",
         path: "/",
       };
 
@@ -110,16 +110,15 @@ export const loginController = async (req, res, next) => {
       // Set Access Token Cookie
       res.cookie("accessToken", data.accessToken, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: "strict",
-        maxAge: 15 * 60 * 1000, // 15 min
+        secure: true,
+        sameSite: "none",
+        maxAge: 15 * 60 * 1000,
       });
 
-      // Set Refresh Token Cookie
       res.cookie("refreshToken", data.refreshToken, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: "strict",
+        secure: true,
+        sameSite: "none",
         maxAge: data.expiryMs || 7 * 24 * 60 * 60 * 1000,
       });
 
@@ -158,17 +157,16 @@ export const refreshTokenController = async (req, res, next) => {
       // Update Access Token Cookie
       res.cookie("accessToken", data.accessToken, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: "strict",
-        maxAge: 15 * 60 * 1000, // 15 min
+        secure: true,
+        sameSite: "none",
+        maxAge: 15 * 60 * 1000,
       });
 
-      // Update Refresh Token Cookie
       res.cookie("refreshToken", data.refreshToken, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        secure: true,
+        sameSite: "none",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
     }
 
@@ -193,8 +191,8 @@ export const logoutController = async (req, res, next) => {
     // Clear all auth cookies — path must exactly match how they were set
     const clearOptions = {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       path: "/",
     };
 
@@ -252,8 +250,8 @@ export const oauthCallbackController = async (req, res, next) => {
     const isProduction = process.env.NODE_ENV === "production";
     const cookieOptions = {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
     };
 
     res.cookie("accessToken", accessToken, {
