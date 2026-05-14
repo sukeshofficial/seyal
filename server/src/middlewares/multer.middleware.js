@@ -3,7 +3,9 @@ import path from "path";
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, "./public/temp");
+        // On Vercel, only /tmp is writable
+        const uploadPath = process.env.NODE_ENV === "production" ? "/tmp" : "./public/temp";
+        cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -11,7 +13,7 @@ const storage = multer.diskStorage({
     },
 });
 
-export const upload = multer({ 
+export const upload = multer({
     storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
     fileFilter: (req, file, cb) => {
