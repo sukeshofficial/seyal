@@ -17,14 +17,16 @@ export const meService = async (userId) => {
     return {
         statusCode: 200,
         success: true,
-        user: {
-            id: user._id,
-            name: user.name || null,
-            email: user.email,
-            username: user.username,
-            providers: user.providers,
-            isVerified: user.isVerified,
-            profilePicture: user.profilePicture || null,
+        data: {
+            user: {
+                id: user._id,
+                name: user.name || null,
+                email: user.email,
+                username: user.username,
+                providers: user.providers,
+                isVerified: user.isVerified,
+                profilePicture: user.profilePicture || null,
+            },
         },
     };
 };

@@ -88,6 +88,15 @@ export const verifyOtpService = async (payload) => {
             statusCode: 200,
             success: true,
             message: "Email verified successfully",
+            data: {
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    username: user.username,
+                    isVerified: user.isVerified,
+                }
+            }
         };
     } catch (error) {
         if (isProduction && session?.inTransaction()) {

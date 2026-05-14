@@ -136,6 +136,27 @@
   html {
     @apply font-mono;
   }
+
+  button,
+  a,
+  [role="button"],
+  label[for],
+  select,
+  summary,
+  [tabindex]:not([tabindex="-1"]) {
+    cursor: pointer;
+  }
+
+  input,
+  textarea {
+    cursor: text;
+  }
+
+  *:disabled,
+  [disabled],
+  [aria-disabled="true"] {
+    cursor: not-allowed !important;
+  }
 }
 
 @layer components {
@@ -185,5 +206,21 @@
 
   .not-found-link {
     @apply mt-8 px-6 py-2 bg-primary text-primary-foreground rounded-md transition-colors inline-block;
+  }
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(0);
+  animation: ripple-out 0.55s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes ripple-out {
+  to {
+    transform: scale(4);
+    opacity: 0;
   }
 }

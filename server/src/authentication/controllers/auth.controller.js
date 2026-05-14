@@ -1,8 +1,14 @@
 import bcrypt from "bcryptjs";
+import signupService from "../services/signup.service.js";
+import verifyOtpService from "../services/verifyOtp.service.js";
+import resendOtpService from "../services/resendOtp.service.js";
 import loginService from "../services/login.service.js";
 import refreshTokenService from "../services/refresh-token.service.js";
 import logoutService from "../services/logout.service.js";
 import meService from "../services/me.service.js";
+import forgotPasswordService from "../services/forgotPassword.service.js";
+import resetPasswordService from "../services/resetPassword.service.js";
+import getPublicAvatarService from "../services/public-profile.service.js";
 import RefreshToken from "../models/refresh-token.model.js";
 import generateTokens from "../../utils/generateTokens.js";
 import jwtConfig from "../../config/jwt.config.js";
@@ -19,9 +25,72 @@ export const signupController = async (req, res, next) => {
 
 export const verifyOtpController = async (req, res, next) => {
   try {
-    const { statusCode, ...response } = await verifyOtpService(req.body);
+    const { statusCode, success, message, data } = await verifyOtpService(req.body);
 
-    return res.status(statusCode).json(response);
+    if (success && data?.user) {
+      const user = data.user;
+      const userId = user.id || user._id;
+
+      // 1. Generate tokens
+      const { accessToken, refreshToken } = generateTokens({
+        _id: userId,
+        email: user.email,
+        providers: user.providers || ["local"]
+      });
+
+      // 2. Hash and store refresh token
+      const BCRYPT_SALT_ROUNDS = 12;
+      const hashedToken = await bcrypt.hash(refreshToken, BCRYPT_SALT_ROUNDS);
+
+      const isProduction = process.env.NODE_ENV === "production";
+      const refreshExpiresIn = jwtConfig.refresh.expiresIn || "7d";
+      let expiryMs = 7 * 24 * 60 * 60 * 1000;
+
+      if (typeof refreshExpiresIn === "number") {
+        expiryMs = refreshExpiresIn;
+      } else if (typeof refreshExpiresIn === "string") {
+        const unit = refreshExpiresIn.slice(-1);
+        const value = parseInt(refreshExpiresIn.slice(0, -1));
+        if (!isNaN(value)) {
+          if (unit === "d") expiryMs = value * 24 * 60 * 60 * 1000;
+          else if (unit === "h") expiryMs = value * 60 * 60 * 1000;
+          else if (unit === "m") expiryMs = value * 60 * 1000;
+          else if (unit === "s") expiryMs = value * 1000;
+        }
+      }
+
+      await RefreshToken.create({
+        userId,
+        hashedToken,
+        userAgent: req.headers["user-agent"],
+        ipAddress: req.ip,
+        expiresAt: new Date(Date.now() + expiryMs),
+      });
+
+      // 3. Set Cookies
+      const cookieOptions = {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: "strict",
+        path: "/",
+      };
+
+      res.cookie("accessToken", accessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000, // 15 min
+      });
+
+      res.cookie("refreshToken", refreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+    }
+
+    return res.status(statusCode).json({
+      success,
+      message,
+      data,
+    });
   } catch (error) {
     next(error);
   }
@@ -117,15 +186,20 @@ export const logoutController = async (req, res, next) => {
     const { statusCode, ...response } = await logoutService(token, userAgent);
 
     const isProduction = process.env.NODE_ENV === "production";
-    const cookieOptions = {
+
+    // Clear all auth cookies — path must exactly match how they were set
+    const clearOptions = {
       httpOnly: true,
       secure: isProduction,
       sameSite: "strict",
+      path: "/",
     };
 
-    // Clear Cookies
-    res.clearCookie("accessToken", cookieOptions);
-    res.clearCookie("refreshToken", cookieOptions);
+    res.clearCookie("accessToken", clearOptions);
+    res.clearCookie("refreshToken", clearOptions);
+    // Clear any Passport session cookies that may have been created
+    res.clearCookie("session", { path: "/" });
+    res.clearCookie("connect.sid", { path: "/" });
 
     return res.status(statusCode).json(response);
   } catch (error) {
@@ -191,7 +265,45 @@ export const oauthCallbackController = async (req, res, next) => {
 
     // 4. Redirect to frontend
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-    return res.redirect(`${frontendUrl}/dashboard?auth=success`);
+    return res.redirect(`${frontendUrl}/`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendOtpController = async (req, res, next) => {
+  try {
+    const { statusCode, ...response } = await resendOtpService(req.body);
+
+    return res.status(statusCode).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const forgotPasswordController = async (req, res, next) => {
+  try {
+    const { statusCode, ...response } = await forgotPasswordService(req.body);
+    return res.status(statusCode).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPasswordController = async (req, res, next) => {
+  try {
+    const { statusCode, ...response } = await resetPasswordService(req.body);
+    return res.status(statusCode).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAvatarController = async (req, res, next) => {
+  try {
+    const { identifier } = req.params;
+    const { statusCode, ...response } = await getPublicAvatarService(identifier);
+    return res.status(statusCode).json(response);
   } catch (error) {
     next(error);
   }
@@ -212,6 +324,10 @@ export default {
   loginController,
   refreshTokenController,
   logoutController,
+  resendOtpController,
+  forgotPasswordController,
+  resetPasswordController,
   meController,
   oauthCallbackController,
+  getAvatarController,
 };
