@@ -224,3 +224,38 @@
     opacity: 0;
   }
 }
+
+/* --- Premium SEYAL Custom Scrollbar --- */
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(184, 184, 184, 0.15);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(131, 131, 131, 0.4);
+  background-image: linear-gradient(to bottom, #5b4cff, #6c5cff);
+  box-shadow: 0 0 12px rgba(92, 92, 92, 0.3);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(95, 95, 95, 0.2);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95, 95, 95, 0.2) transparent;
+}

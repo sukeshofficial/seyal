@@ -6,7 +6,8 @@ const AuthBranding = () => {
             {/* Cinematic Cosmic Background System */}
             <div className="absolute inset-0 z-0 pointer-events-none">
                 <img
-                    src="https://images.aeonmedia.co/images/78ba87e7-7198-4468-81b5-500c505d5bc8/essay-gettyimages-1237093074.jpg?width=3840&quality=75&format=auto"
+                    src="https://res.cloudinary.com/ddo5ryeor/image/upload/q_auto/f_auto/v1778739585/gargantua-endurance-3840x2160-25445.jpg_lgtwtr.jpg"
+                    // src="https://images.aeonmedia.co/images/78ba87e7-7198-4468-81b5-500c505d5bc8/essay-gettyimages-1237093074.jpg?width=3840&quality=75&format=auto"
                     className="w-full h-full object-cover opacity-60 scale-105"
                     alt=""
                 />

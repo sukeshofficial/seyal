@@ -93,12 +93,75 @@ const SignupForm = () => {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-zinc-900/30 p-5 rounded-2xl border border-white/5 shadow-2xl backdrop-blur-sm">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-zinc-900/30 p-5 rounded-2xl border border-white/5 shadow-2xl backdrop-blur-sm items-start">
+            {/* Top on Mobile, Right on Desktop: Profile & Social Auth */}
+            <div className="md:col-span-5 order-1 md:order-2 flex flex-col gap-[43px]">
+              {/* Profile Upload */}
+              <FormField
+                control={form.control}
+                name="profilePicture"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <ProfileUpload
+                        onImageSelect={handleImageUpload}
+                        isUploading={isUploading}
+                        error={form.formState.errors.profilePicture?.message}
+                        compact
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-            {/* Left Column: Form Fields */}
-            <div className="md:col-span-7 space-y-7">
+              <div className="space-y-4">
+                <SocialAuth />
+                {/* Desktop-only Submit (at bottom of right column) */}
+                <div className="hidden md:block">
+                  <div className={`transition-all duration-400 flex justify-center ${btnState === 'idle' ? 'w-full' : 'w-full'}`}>
+                    <Button
+                      type="submit"
+                      disabled={btnState !== 'idle'}
+                      onClick={(e) => {
+                        if (btnState !== 'idle') return;
+                        const btn = e.currentTarget;
+                        const circle = document.createElement('span');
+                        const size = btn.offsetWidth;
+                        circle.className = 'ripple';
+                        circle.style.cssText = `width:${size}px;height:${size}px;left:${e.nativeEvent.offsetX - size / 2}px;top:${e.nativeEvent.offsetY - size / 2}px;`;
+                        btn.appendChild(circle);
+                        setTimeout(() => circle.remove(), 600);
+                      }}
+                      className={`
+                        relative overflow-hidden h-11 rounded-full text-white font-bold
+                        text-sm uppercase tracking-wider transition-all duration-400
+                        ${btnState === 'idle' ? 'w-full bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98]' : ''}
+                        ${btnState === 'loading' ? 'w-11 bg-indigo-700' : ''}
+                        ${btnState === 'success' ? 'w-11 bg-green-600' : ''}
+                      `}
+                      style={{ transition: 'width 0.4s cubic-bezier(.4,0,.2,1), background 0.3s, transform 0.15s' }}
+                    >
+                      <span className={`absolute flex items-center gap-2 transition-all duration-200
+                                    ${btnState !== 'idle' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}>
+                        Create Account <ArrowRight className="h-4 w-4" />
+                      </span>
+                      <span className={`absolute transition-all duration-200
+                                    ${btnState === 'loading' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
+                        <LoaderIcon className="h-5 w-5 animate-spin" />
+                      </span>
+                      <span className={`absolute transition-all duration-200
+                                    ${btnState === 'success' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
+                        <Check className="h-5 w-5" />
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom on Mobile, Left on Desktop: Form Fields */}
+            <div className="md:col-span-7 space-y-6 border-r-0 md:border-r border-white/5 pl-0 md:pr-8 order-2 md:order-1">
               <div className="grid grid-cols-2 gap-3">
-                {/* First Name */}
                 <FormField
                   control={form.control}
                   name="firstName"
@@ -119,8 +182,6 @@ const SignupForm = () => {
                     </FormItem>
                   )}
                 />
-
-                {/* Last Name */}
                 <FormField
                   control={form.control}
                   name="lastName"
@@ -143,7 +204,6 @@ const SignupForm = () => {
                 />
               </div>
 
-              {/* Username */}
               <FormField
                 control={form.control}
                 name="username"
@@ -165,7 +225,6 @@ const SignupForm = () => {
                 )}
               />
 
-              {/* Email */}
               <FormField
                 control={form.control}
                 name="email"
@@ -188,7 +247,6 @@ const SignupForm = () => {
               />
 
               <div className="grid grid-cols-2 gap-3">
-                {/* Password */}
                 <FormField
                   control={form.control}
                   name="password"
@@ -206,8 +264,6 @@ const SignupForm = () => {
                     </FormItem>
                   )}
                 />
-
-                {/* Confirm Password */}
                 <FormField
                   control={form.control}
                   name="confirmPassword"
@@ -226,30 +282,9 @@ const SignupForm = () => {
                   )}
                 />
               </div>
-            </div>
 
-            {/* Right Column: Actions & Profile */}
-            <div className="md:col-span-5 flex flex-col gap-4 border-l border-white/5 pl-6">
-              {/* Profile Upload */}
-              <FormField
-                control={form.control}
-                name="profilePicture"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <ProfileUpload
-                        onImageSelect={handleImageUpload}
-                        isUploading={isUploading}
-                        error={form.formState.errors.profilePicture?.message}
-                        compact
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <div className="mt-auto space-y-4">
-                <SocialAuth />
+              {/* Mobile-only Submit (at bottom of fields column) */}
+              <div className="md:hidden pt-4">
                 <div className={`transition-all duration-400 flex justify-center ${btnState === 'idle' ? 'w-full' : 'w-full'}`}>
                   <Button
                     type="submit"
@@ -270,22 +305,17 @@ const SignupForm = () => {
                       ${btnState === 'idle' ? 'w-full bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98]' : ''}
                       ${btnState === 'loading' ? 'w-11 bg-indigo-700' : ''}
                       ${btnState === 'success' ? 'w-11 bg-green-600' : ''}
-                  `}
+                    `}
                     style={{ transition: 'width 0.4s cubic-bezier(.4,0,.2,1), background 0.3s, transform 0.15s' }}
                   >
-                    {/* Default label */}
                     <span className={`absolute flex items-center gap-2 transition-all duration-200
                                   ${btnState !== 'idle' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}>
                       Create Account <ArrowRight className="h-4 w-4" />
                     </span>
-
-                    {/* Loading spinner */}
                     <span className={`absolute transition-all duration-200
                                   ${btnState === 'loading' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
                       <LoaderIcon className="h-5 w-5 animate-spin" />
                     </span>
-
-                    {/* Success check */}
                     <span className={`absolute transition-all duration-200
                                   ${btnState === 'success' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
                       <Check className="h-5 w-5" />
