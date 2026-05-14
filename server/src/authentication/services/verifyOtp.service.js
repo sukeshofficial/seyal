@@ -14,7 +14,7 @@ const OTP_MAX_ATTEMPTS = 5;
  * @returns {Object} - Success response or throws AppError
  */
 export const verifyOtpService = async (payload) => {
-    const isProduction = process.env.NODE_ENV === "produtction";
+    const isProduction = process.env.NODE_ENV === "production";
     const session = isProduction ? await mongoose.startSession() : null;
 
     try {

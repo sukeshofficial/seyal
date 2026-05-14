@@ -20,7 +20,7 @@ const buildSafeUser = (userDoc) => {
 };
 
 export const signupService = async (payload) => {
-  const isProduction = process.env.NODE_ENV === "produtction";
+  const isProduction = process.env.NODE_ENV === "production";
 
   const session = isProduction ? await mongoose.startSession() : null;
 
