@@ -1,15 +1,21 @@
 import mongoose from "mongoose";
 
 mongoose.connection.on("connected", () => {
-  console.log("MongoDB Connected Successfully ✅");
+  if (process.env.NODE_ENV === "development") {
+    console.log("MongoDB Connected Successfully ✅");
+  }
 });
 
 mongoose.connection.on("disconnected", () => {
-  console.log("MongoDB Disconnected ⚠️");
+  if (process.env.NODE_ENV === "development") {
+    console.log("MongoDB Disconnected ⚠️");
+  }
 });
 
 mongoose.connection.on("reconnected", () => {
-  console.log("MongoDB Reconnected 🔄");
+  if (process.env.NODE_ENV === "development") {
+    console.log("MongoDB Reconnected 🔄");
+  }
 });
 
 mongoose.connection.on("error", (err) => {

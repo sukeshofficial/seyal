@@ -34,7 +34,9 @@ transporter.verify((error) => {
   if (error) {
     console.error("Mail Server Error ❌", error.message);
   } else {
-    console.log("Mail Server Connected ✅");
+    if (process.env.NODE_ENV === "development") {
+      console.log("Mail Server Connected ✅");
+    }
   }
 });
 

@@ -11,17 +11,23 @@ async function startServer() {
     await connectDB();
 
     const server = app.listen(PORT, () => {
-      console.log(`Server running: http://localhost:${PORT}`);
+      if (process.env.NODE_ENV === "development") {
+        console.log(`Server running: http://localhost:${PORT}`);
+      }
     });
 
     // Graceful shutdown
     const shutdown = async (signal) => {
-      console.log(`${signal} received. Shutting down gracefully...`);
+      if (process.env.NODE_ENV === "development") {
+        console.log(`${signal} received. Shutting down gracefully...`);
+      }
 
       server.close(async () => {
         await mongoose.connection.close();
 
-        console.log("MongoDB connection closed");
+        if (process.env.NODE_ENV === "development") {
+          console.log("MongoDB connection closed");
+        }
         process.exit(0);
       });
     };

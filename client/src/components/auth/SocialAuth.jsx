@@ -26,11 +26,13 @@ const GoogleIcon = () => (
 
 const SocialAuth = () => {
     const handleGoogleLogin = () => {
-        window.location.href = "http://localhost:5000/api/v1/auth/google";
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+        window.location.href = `${apiUrl}/auth/google`;
     };
 
     const handleGithubLogin = () => {
-        window.location.href = "http://localhost:5000/api/v1/auth/github";
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+        window.location.href = `${apiUrl}/auth/github`;
     };
 
     return (
