@@ -22,12 +22,25 @@ mongoose.connection.on("error", (err) => {
   console.error("MongoDB Connection Error ❌", err.message);
 });
 
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected) {
+    if (process.env.NODE_ENV === "development") {
+      console.log("Using existing MongoDB connection");
+    }
+    return;
+  }
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    const db = await mongoose.connect(process.env.MONGODB_URI);
+    isConnected = db.connections[0].readyState === 1;
+    if (process.env.NODE_ENV === "development") {
+      console.log("New MongoDB connection established");
+    }
   } catch (error) {
-    console.error("Initial connection failed:", error.message);
-    process.exit(1);
+    console.error("MongoDB connection failed:", error.message);
+    throw error;
   }
 };
 
