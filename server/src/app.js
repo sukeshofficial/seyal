@@ -49,12 +49,15 @@ app.use(helmet({
 
 // Logger
 const logger = pinoHttp({
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true,
-    },
-  },
+  transport:
+    process.env.NODE_ENV === "development"
+      ? {
+        target: "pino-pretty",
+        options: {
+          colorize: true,
+        },
+      }
+      : undefined,
 });
 
 app.use(logger);
