@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
+import User from "../models/users.model.js";
 import RefreshToken from "../models/refresh-token.model.js";
 import jwtConfig from "../../config/jwt.config.js";
 
@@ -21,11 +22,12 @@ export const logoutService = async (token, userAgent) => {
     }
 
     try {
-        // 2. Verify JWT to extract userId
+        // 2. Verify JWT to extract userId (soft check — we log out even if expired)
         let decoded;
         try {
             decoded = jwt.verify(token, jwtConfig.refresh.secret);
         } catch (err) {
+            // Expired or invalid refresh token — still return success (idempotent logout)
             return {
                 statusCode: 200,
                 success: true,
@@ -36,7 +38,6 @@ export const logoutService = async (token, userAgent) => {
         const userId = decoded.sub;
 
         // 3. Revoke all sessions for this user on this user-agent
-        // This handles multi-tab logout and ensures any session on this device is invalidated
         await RefreshToken.updateMany(
             {
                 userId,
@@ -47,6 +48,11 @@ export const logoutService = async (token, userAgent) => {
                 isRevoked: true,
             },
         );
+
+        // 4. Increment tokenVersion — this is the critical step.
+        //    Any access tokens issued before this moment will now be rejected
+        //    by the protect middleware because their 'tv' claim will be stale.
+        await User.findByIdAndUpdate(userId, { $inc: { tokenVersion: 1 } });
 
         return {
             statusCode: 200,

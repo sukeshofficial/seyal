@@ -94,6 +94,17 @@ const userSchema = new Schema(
 
       default: null,
     },
+
+    /**
+     * Incremented on every logout.
+     * Embedded in access tokens (tv claim) so the protect middleware
+     * can reject tokens issued before the last logout without a blacklist.
+     */
+    tokenVersion: {
+      type: Number,
+      default: 0,
+      select: false, // Never exposed in API responses
+    },
   },
 
   {

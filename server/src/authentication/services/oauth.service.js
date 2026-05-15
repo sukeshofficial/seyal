@@ -17,12 +17,12 @@ export const oauthService = async (profile, provider) => {
 
     // 1. Try to find user by providerId
     const providerField = `${provider}Id`; // e.g. googleId, githubId
-    let user = await User.findOne({ [providerField]: providerId });
+    let user = await User.findOne({ [providerField]: providerId }).select("+tokenVersion");
 
     if (user) return user;
 
     // 2. If not found, try to find user by email (Account Linking)
-    user = await User.findOne({ email });
+    user = await User.findOne({ email }).select("+tokenVersion");
 
     if (user) {
         // Link existing account
@@ -52,6 +52,9 @@ export const oauthService = async (profile, provider) => {
         isVerified: true, // Trusted from OAuth
         profilePicture: profile.photos?.[0]?.value || null,
     });
+
+    // Re-fetch to include tokenVersion (select: false on the model)
+    user = await User.findById(user._id).select("+tokenVersion");
 
     return user;
 };

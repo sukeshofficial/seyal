@@ -7,6 +7,7 @@ const generateTokens = (user) => {
       sub: user._id.toString(),
       email: user.email,
       providers: user.providers || [],
+      tv: user.tokenVersion ?? 0, // Token version — used to revoke sessions on logout
     },
     jwtConfig.access.secret,
     {

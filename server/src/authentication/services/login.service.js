@@ -29,7 +29,7 @@ export const loginService = async (payload, metadata) => {
                 { email: normalizedIdentifier },
                 { username: normalizedIdentifier },
             ],
-        }).select("+password");
+        }).select("+password +tokenVersion");
 
         // 2. User Not Found or Password Incorrect (Generic Message)
         if (!user || !(await user.comparePassword(password))) {

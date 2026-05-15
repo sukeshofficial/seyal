@@ -27,7 +27,7 @@ authApi.interceptors.response.use(
         const originalRequest = error.config;
 
         // List of routes that should never trigger a token refresh on 401
-        const AUTH_ROUTES = ["/auth/login", "/auth/signup", "/auth/forgot-password", "/auth/reset-password", "/auth/verify-otp", "/auth/verify-reset-otp"];
+        const AUTH_ROUTES = ["/auth/login", "/auth/signup", "/auth/logout", "/auth/forgot-password", "/auth/reset-password", "/auth/verify-otp", "/auth/verify-reset-otp"];
         const isAuthRoute = AUTH_ROUTES.some((route) => originalRequest?.url?.includes(route));
 
         // Only intercept 401 errors that haven't been retried yet and aren't auth routes
@@ -65,6 +65,14 @@ authApi.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// When auth becomes invalid (e.g. logout fires mid-refresh), flush the queue
+// and reset the flag so subsequent requests don't hang indefinitely.
+window.addEventListener("auth:unauthorized", () => {
+    isRefreshing = false;
+    processQueue(new Error("Session ended"));
+    failedQueue = [];
+});
 
 /**
  * Signup User

@@ -361,6 +361,11 @@ export const getAvatarController = async (req, res, next) => {
 
 export const meController = async (req, res, next) => {
   try {
+    // Prevent browsers / CDNs from caching the authenticated session response.
+    // Without this, a browser might serve a stale 200 from disk cache after logout.
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.set("Pragma", "no-cache");
+
     const { statusCode, ...response } = await meService(req.user.id);
     return res.status(statusCode).json(response);
   } catch (error) {
