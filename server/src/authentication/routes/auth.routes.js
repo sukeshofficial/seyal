@@ -14,12 +14,13 @@ import {
     resendOtpController,
     forgotPasswordController,
     resetPasswordController,
+    verifyResetOtpController,
     meController,
     oauthCallbackController,
     getAvatarController,
     uploadAvatarController,
 } from "../controllers/auth.controller.js";
-import { forgotPasswordSchema, resetPasswordSchema } from "../validations/reset-password.validation.js";
+import { forgotPasswordSchema, resetPasswordSchema, verifyResetOtpSchema } from "../validations/reset-password.validation.js";
 import { upload } from "../../middlewares/multer.middleware.js";
 
 const router = Router();
@@ -79,6 +80,13 @@ router.post("/forgot-password", validate(forgotPasswordSchema), forgotPasswordCo
  * @access  Public
  */
 router.post("/reset-password", validate(resetPasswordSchema), resetPasswordController);
+
+/**
+ * @route   POST /api/v1/auth/verify-reset-otp
+ * @desc    Verify reset password OTP without consuming it
+ * @access  Public
+ */
+router.post("/verify-reset-otp", validate(verifyResetOtpSchema), verifyResetOtpController);
 
 /**
  * @route   GET /api/v1/auth/avatar/:identifier

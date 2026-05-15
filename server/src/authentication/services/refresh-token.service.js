@@ -9,6 +9,24 @@ import generateTokens from "../../utils/generateTokens.js";
 import jwtConfig from "../../config/jwt.config.js";
 
 /**
+ * Delete Revoked Tokens for a user on a specific device
+ * @param {string} userId
+ * @param {string} userAgent
+ */
+export const deleteRevokedTokens = async (userId, userAgent) => {
+    try {
+        await RefreshToken.deleteMany({
+            userId,
+            userAgent,
+            isRevoked: true,
+        });
+    } catch (error) {
+        // Silently log error to avoid breaking authentication flow
+        console.error("Error deleting revoked tokens:", error);
+    }
+};
+
+/**
  * Refresh Token Service
  * @param {string} token - Raw refresh token from cookie
  * @param {Object} metadata - { userAgent, ipAddress }
@@ -100,7 +118,10 @@ export const refreshTokenService = async (token, metadata) => {
             expiresAt,
         });
 
-        // 7. Return Success
+        // 7. Cleanup Revoked Tokens (for this device)
+        await deleteRevokedTokens(userId, userAgent);
+
+        // 8. Return Success
         return {
             statusCode: 200,
             success: true,

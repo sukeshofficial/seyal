@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 
 import User from "../models/users.model.js";
 import RefreshToken from "../models/refresh-token.model.js";
+import { deleteRevokedTokens } from "./refresh-token.service.js";
 
 import AppError from "../../utils/AppError.js";
 import generateTokens from "../../utils/generateTokens.js";
@@ -85,7 +86,10 @@ export const loginService = async (payload, metadata) => {
             expiresAt,
         });
 
-        // 7. Safe User Object
+        // 7. Cleanup Revoked Tokens (for this device)
+        await deleteRevokedTokens(user._id, userAgent);
+
+        // 8. Safe User Object
         const userObj = user.toObject();
         delete userObj.password;
 

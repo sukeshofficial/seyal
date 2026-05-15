@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import OTPInput from "./OTPInput";
 import PasswordInput from "./PasswordInput";
-import { forgotPassword, resetPassword } from "@/services/auth.api";
+import { forgotPassword, resetPassword, verifyResetOtp } from "@/services/auth.api";
 import { forgotPasswordSchema, resetPasswordSchema } from "@/validations/auth.schema";
 import { cn } from "@/lib/utils";
 
@@ -91,11 +91,19 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
 
         setIsLoading(true);
         setBtnState("loading");
-        setTimeout(() => {
-            setStep(3);
+        try {
+            await verifyResetOtp({ email, otp });
+            setBtnState("success");
+            setTimeout(() => {
+                setStep(3);
+                setBtnState("idle");
+                setIsLoading(false);
+            }, 600);
+        } catch (error) {
+            toast.error(error.message || "Invalid reset code");
             setBtnState("idle");
             setIsLoading(false);
-        }, 600);
+        }
     };
 
     const handlePasswordReset = async (data) => {

@@ -26,7 +26,13 @@ export const resetPasswordSchema = z.object({
         .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
 });
 
+export const verifyResetOtpSchema = z.object({
+    email: z.string().trim().toLowerCase().email("Please enter a valid email address"),
+    otp: z.string().regex(/^\d{6}$/, "OTP must be exactly 6 digits"),
+});
+
 export default {
     forgotPasswordSchema,
     resetPasswordSchema,
+    verifyResetOtpSchema,
 };

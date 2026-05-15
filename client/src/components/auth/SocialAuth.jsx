@@ -44,7 +44,8 @@ const SocialAuth = () => {
                     onClick={handleGoogleLogin}
                     className="bg-zinc-900 border border-zinc-700 hover:border-zinc-600 text-zinc-200 transition-all rounded-full h-10 text-xs font-semibold"
                 >
-                    <GoogleIcon />
+                    <GoogleIcon className="group-hover:hidden" />
+
                     Google
                 </Button>
                 <Button

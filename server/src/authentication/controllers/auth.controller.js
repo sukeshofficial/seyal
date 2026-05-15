@@ -3,11 +3,12 @@ import signupService from "../services/signup.service.js";
 import verifyOtpService from "../services/verifyOtp.service.js";
 import resendOtpService from "../services/resendOtp.service.js";
 import loginService from "../services/login.service.js";
-import refreshTokenService from "../services/refresh-token.service.js";
+import refreshTokenService, { deleteRevokedTokens } from "../services/refresh-token.service.js";
 import logoutService from "../services/logout.service.js";
 import meService from "../services/me.service.js";
 import forgotPasswordService from "../services/forgotPassword.service.js";
 import resetPasswordService from "../services/resetPassword.service.js";
+import verifyResetOtpService from "../services/verifyResetOtp.service.js";
 import getPublicAvatarService from "../services/public-profile.service.js";
 import RefreshToken from "../models/refresh-token.model.js";
 import generateTokens from "../../utils/generateTokens.js";
@@ -68,7 +69,10 @@ export const verifyOtpController = async (req, res, next) => {
         expiresAt: new Date(Date.now() + expiryMs),
       });
 
-      // 3. Set Cookies
+      // 3. Cleanup Revoked Tokens (for this device)
+      await deleteRevokedTokens(userId, req.headers["user-agent"]);
+
+      // 4. Set Cookies
       const cookieOptions = {
         httpOnly: true,
         secure: true, // Must be true for SameSite: None
@@ -246,7 +250,10 @@ export const oauthCallbackController = async (req, res, next) => {
       expiresAt,
     });
 
-    // 3. Set cookies
+    // 3. Cleanup Revoked Tokens (for this device)
+    await deleteRevokedTokens(user._id, req.headers["user-agent"]);
+
+    // 4. Set cookies
     const isProduction = process.env.NODE_ENV === "production";
     const cookieOptions = {
       httpOnly: true,
@@ -294,6 +301,15 @@ export const forgotPasswordController = async (req, res, next) => {
 export const resetPasswordController = async (req, res, next) => {
   try {
     const { statusCode, ...response } = await resetPasswordService(req.body);
+    return res.status(statusCode).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyResetOtpController = async (req, res, next) => {
+  try {
+    const { statusCode, ...response } = await verifyResetOtpService(req.body);
     return res.status(statusCode).json(response);
   } catch (error) {
     next(error);
@@ -361,6 +377,7 @@ export default {
   resendOtpController,
   forgotPasswordController,
   resetPasswordController,
+  verifyResetOtpController,
   meController,
   oauthCallbackController,
   getAvatarController,

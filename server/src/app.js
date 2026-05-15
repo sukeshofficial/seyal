@@ -63,7 +63,7 @@ const logger = pinoHttp({
       : undefined,
 });
 
-app.use(logger);
+// app.use(logger);
 
 // Rate limiter
 app.use(

@@ -24,9 +24,11 @@ const processQueue = (error) => {
 authApi.interceptors.response.use(
     (response) => response,
     async (error) => {
+        const originalRequest = error.config;
+
         // List of routes that should never trigger a token refresh on 401
-        const AUTH_ROUTES = ["/auth/login", "/auth/signup", "/auth/forgot-password", "/auth/reset-password", "/auth/verify-otp"];
-        const isAuthRoute = AUTH_ROUTES.some((route) => originalRequest.url?.includes(route));
+        const AUTH_ROUTES = ["/auth/login", "/auth/signup", "/auth/forgot-password", "/auth/reset-password", "/auth/verify-otp", "/auth/verify-reset-otp"];
+        const isAuthRoute = AUTH_ROUTES.some((route) => originalRequest?.url?.includes(route));
 
         // Only intercept 401 errors that haven't been retried yet and aren't auth routes
         if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
@@ -158,6 +160,15 @@ export const resetPassword = async (data) => {
     }
 };
 
+export const verifyResetOtp = async (data) => {
+    try {
+        const response = await authApi.post("/auth/verify-reset-otp", data);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { message: "Invalid reset code" };
+    }
+};
+
 export const getPublicAvatar = async (identifier) => {
     try {
         const response = await authApi.get(`/auth/avatar/${encodeURIComponent(identifier)}`);
@@ -198,6 +209,7 @@ export default {
     resendOtp,
     forgotPassword,
     resetPassword,
+    verifyResetOtp,
     getPublicAvatar,
     uploadAvatar,
 };
