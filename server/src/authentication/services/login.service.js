@@ -31,8 +31,27 @@ export const loginService = async (payload, metadata) => {
             ],
         }).select("+password +tokenVersion");
 
-        // 2. User Not Found or Password Incorrect (Generic Message)
-        if (!user || !(await user.comparePassword(password))) {
+        // 2. User not found — generic error to avoid user enumeration
+        if (!user) {
+            throw new AppError(401, "Invalid credentials");
+        }
+
+        // 3. OAuth-only account — no password stored in DB.
+        //    bcrypt.compare(string, undefined) would throw "Illegal arguments: string, undefined".
+        //    Return a clear error directing the user to their social login provider.
+        if (!user.password) {
+            const providers = user.providers?.filter((p) => p !== "local") || [];
+            const providerNames = providers.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" or ");
+            throw new AppError(
+                401,
+                providerNames
+                    ? `This account was created with ${providerNames}. Please sign in using that provider.`
+                    : "This account does not have a password. Please use a social login provider."
+            );
+        }
+
+        // 4. Password exists — validate it
+        if (!(await user.comparePassword(password))) {
             throw new AppError(401, "Invalid credentials");
         }
 
