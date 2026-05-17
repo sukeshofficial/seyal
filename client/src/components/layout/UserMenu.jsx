@@ -250,8 +250,14 @@ export function UserMenu({ isCollapsed, isDark, handleToggle }) {
         <div className="flex items-center gap-2 pr-2">
           <Sun className="size-4" />
           <Tooltip>
-            <TooltipTrigger>
-              <Switch checked={isDark} onCheckedChange={handleToggle} className="cursor-pointer" />
+            <TooltipTrigger asChild>
+              <span className="inline-flex">
+                <Switch
+                  checked={isDark}
+                  onCheckedChange={handleToggle}
+                  className="cursor-pointer"
+                />
+              </span>
             </TooltipTrigger>
 
             <TooltipContent side="top">

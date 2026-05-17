@@ -1,36 +1,170 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { useCallback, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, Link } from "react-router-dom";
+import { ArrowRight, AtSign, Check, LoaderIcon, Mail, User } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { LoaderIcon, User, Mail, AtSign, ArrowRight, Check } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
-import { signupSchema } from "@/validations/auth.schema";
 import { signupUser, uploadAvatar } from "@/services/auth.api";
+import { signupSchema } from "@/validations/auth.schema";
+
+import PasswordInput from "./PasswordInput";
 import ProfileUpload from "./ProfileUpload";
 import SocialAuth from "./SocialAuth";
-import PasswordInput from "./PasswordInput";
 import VerifyOTPModal from "./VerifyOTPModal";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
+/* -------------------------------------------------------------------------- */
+/*                                   Config                                   */
+/* -------------------------------------------------------------------------- */
+
+const SIGNUP_CONFIG = {
+  TRANSITION_DELAY: 1200,
+  RIPPLE_DURATION: 600,
+  FIELD_MODE: "onBlur",
+};
+
+const BTN_STATES = {
+  IDLE: "idle",
+  LOADING: "loading",
+  SUCCESS: "success",
+};
+
+/* -------------------------------------------------------------------------- */
+/*                                   Styles                                   */
+/* -------------------------------------------------------------------------- */
+
+const STYLES = {
+  container: "space-y-4",
+  header: {
+    wrapper: "space-y-1 text-center",
+    title: "text-2xl font-bold tracking-tight text-white",
+    subtitle: "text-xs text-zinc-400 uppercase tracking-widest font-medium",
+  },
+  formGrid: cn(
+    "grid grid-cols-1 md:grid-cols-12 gap-6 bg-zinc-900/30 p-5 items-start",
+    "rounded-2xl border border-white/5 shadow-2xl backdrop-blur-sm"
+  ),
+  columnRight: "md:col-span-5 order-1 md:order-2 flex flex-col gap-[43px]",
+  columnLeft: cn(
+    "md:col-span-7 space-y-6 border-r-0 md:border-r border-white/5",
+    "pl-0 md:pr-8 order-2 md:order-1"
+  ),
+  inputWrapper: "relative group",
+  inputIcon: cn(
+    "absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5",
+    "text-zinc-600 group-focus-within:text-indigo-400 transition-colors"
+  ),
+  inputBase: cn(
+    "pl-9 h-10 bg-zinc-950/50 border-zinc-800 rounded-full",
+    "focus-visible:ring-indigo-500/20 text-white text-sm"
+  ),
+  labelBase: "text-[11px] font-bold uppercase text-zinc-500 tracking-wider",
+  messageBase: "text-[10px]",
+  submitBtn: {
+    base: cn(
+      "relative overflow-hidden h-11 rounded-full text-white font-bold",
+      "text-sm uppercase tracking-wider transition-all duration-400"
+    ),
+    idle: "w-full bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98]",
+    loading: "w-11 bg-indigo-700",
+    success: "w-11 bg-green-600",
+    content: "absolute flex items-center gap-2 transition-all duration-200",
+  },
+  footer: {
+    wrapper: "text-center text-xs text-zinc-500",
+    link: "text-indigo-400 hover:text-indigo-300 font-bold transition-colors",
+  },
+};
+
+/* -------------------------------------------------------------------------- */
+/*                              Helper Functions                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Spawns a ripple effect on a button element.
+ */
+const spawnRipple = (event) => {
+  const btn = event.currentTarget;
+  const circle = document.createElement("span");
+  const size = btn.offsetWidth;
+
+  circle.className = "ripple";
+  circle.style.cssText = `
+    width:${size}px;
+    height:${size}px;
+    left:${event.nativeEvent.offsetX - size / 2}px;
+    top:${event.nativeEvent.offsetY - size / 2}px;
+  `;
+
+  btn.appendChild(circle);
+  setTimeout(() => circle.remove(), SIGNUP_CONFIG.RIPPLE_DURATION);
+};
+
+/* -------------------------------------------------------------------------- */
+/*                                 Component                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * SignupForm Component
+ * Senior-level refactor with dry logic and performance optimizations.
+ */
 const SignupForm = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [otpModal, setOtpModal] = useState({ isOpen: false, email: "" });
-  const [btnState, setBtnState] = useState('idle');
-  const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
+  const [btnState, setBtnState] = useState(BTN_STATES.IDLE);
+  const [isUploading, setIsUploading] = useState(false);
+  const [otpModal, setOtpModal] = useState({ isOpen: false, email: "" });
 
-  const handleImageUpload = async (file) => {
+  const form = useForm({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      profilePicture: null,
+    },
+    mode: SIGNUP_CONFIG.FIELD_MODE,
+  });
+
+  /* ---------------------------------------------------------------------- */
+  /*                               Computed UI                              */
+  /* ---------------------------------------------------------------------- */
+
+  const isInteractionDisabled = btnState !== BTN_STATES.IDLE;
+
+  const submitBtnClass = useMemo(() => cn(
+    STYLES.submitBtn.base,
+    btnState === BTN_STATES.IDLE && STYLES.submitBtn.idle,
+    btnState === BTN_STATES.LOADING && STYLES.submitBtn.loading,
+    btnState === BTN_STATES.SUCCESS && STYLES.submitBtn.success
+  ), [btnState]);
+
+  const submitButtonContent = (
+    <>
+      <span className={cn(STYLES.submitBtn.content, btnState !== BTN_STATES.IDLE ? "opacity-0 scale-75" : "opacity-100 scale-100")}>
+        Create Account <ArrowRight className="h-4 w-4" />
+      </span>
+      <span className={cn(STYLES.submitBtn.content, btnState === BTN_STATES.LOADING ? "opacity-100 scale-100" : "opacity-0 scale-75")}>
+        <LoaderIcon className="h-5 w-5 animate-spin" />
+      </span>
+      <span className={cn(STYLES.submitBtn.content, btnState === BTN_STATES.SUCCESS ? "opacity-100 scale-100" : "opacity-0 scale-75")}>
+        <Check className="h-5 w-5" />
+      </span>
+    </>
+  );
+
+  /* ---------------------------------------------------------------------- */
+  /*                                 Actions                                */
+  /* ---------------------------------------------------------------------- */
+
+  const handleImageUpload = useCallback(async (file) => {
     if (!file) {
       form.setValue("profilePicture", null);
       return;
@@ -44,63 +178,70 @@ const SignupForm = () => {
         toast.success("Profile picture secured!");
       }
     } catch (error) {
-      console.error("Upload failed:", error);
-      toast.error(error.message || "Failed to upload image. Please try again.");
+      toast.error(error.message || "Failed to upload image.");
       form.setValue("profilePicture", null);
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [form]);
 
-  const form = useForm({
-    resolver: zodResolver(signupSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      profilePicture: null,
-    },
-    mode: "onBlur",
-  });
-
-  const onSubmit = async (values) => {
-    setBtnState('loading');
+  const onSignupSubmit = useCallback(async (values) => {
+    setBtnState(BTN_STATES.LOADING);
     try {
       const response = await signupUser(values);
       toast.success(response.message || "Signup successful! Verify your email.");
-      setBtnState('success');
+      setBtnState(BTN_STATES.SUCCESS);
+
       setTimeout(() => {
         setOtpModal({ isOpen: true, email: values.email });
-        setBtnState('idle');
-      }, 1200);
+        setBtnState(BTN_STATES.IDLE);
+      }, SIGNUP_CONFIG.TRANSITION_DELAY);
     } catch (error) {
-      console.error("Signup failed:", error);
-      toast.error(error.message || "Registration failed. Please check your details.");
-      setBtnState('idle');
+      toast.error(error.message || "Registration failed.");
+      setBtnState(BTN_STATES.IDLE);
     }
-  };
+  }, []);
+
+  const handleBtnInteraction = useCallback((e) => {
+    if (isInteractionDisabled) return;
+    spawnRipple(e);
+  }, [isInteractionDisabled]);
+
+  /* ---------------------------------------------------------------------- */
+  /*                               Sub-Components                           */
+  /* ---------------------------------------------------------------------- */
+
+  const SharedSubmitButton = (
+    <div className="flex justify-center transition-all duration-400">
+      <Button
+        type="submit"
+        disabled={isInteractionDisabled}
+        onClick={handleBtnInteraction}
+        className={submitBtnClass}
+        style={{ transition: 'width 0.4s cubic-bezier(.4,0,.2,1), background 0.3s, transform 0.15s' }}
+      >
+        {submitButtonContent}
+      </Button>
+    </div>
+  );
 
   return (
-    <div className="space-y-4">
-      {/* Form Header */}
-      <div className="space-y-1 text-center">
-        <h2 className="text-2xl font-bold tracking-tight text-white">Create your account</h2>
-        <p className="text-xs text-zinc-400 uppercase tracking-widest font-medium">Join the SEYAL developer ecosystem</p>
-      </div>
+    <div className={STYLES.container}>
+      <header className={STYLES.header.wrapper}>
+        <h2 className={STYLES.header.title}>Create your account</h2>
+        <p className={STYLES.header.subtitle}>Join the SEYAL developer ecosystem</p>
+      </header>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-zinc-900/30 p-5 rounded-2xl border border-white/5 shadow-2xl backdrop-blur-sm items-start">
-            {/* Top on Mobile, Right on Desktop: Profile & Social Auth */}
-            <div className="md:col-span-5 order-1 md:order-2 flex flex-col gap-[43px]">
-              {/* Profile Upload */}
+        <form onSubmit={form.handleSubmit(onSignupSubmit)} className="space-y-4">
+          <div className={STYLES.formGrid}>
+
+            {/* Right Column (Desktop) / Top (Mobile) */}
+            <div className={STYLES.columnRight}>
               <FormField
                 control={form.control}
                 name="profilePicture"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormControl>
                       <ProfileUpload
@@ -116,69 +257,28 @@ const SignupForm = () => {
 
               <div className="space-y-4">
                 <SocialAuth />
-                {/* Desktop-only Submit (at bottom of right column) */}
                 <div className="hidden md:block">
-                  <div className={`transition-all duration-400 flex justify-center ${btnState === 'idle' ? 'w-full' : 'w-full'}`}>
-                    <Button
-                      type="submit"
-                      disabled={btnState !== 'idle'}
-                      onClick={(e) => {
-                        if (btnState !== 'idle') return;
-                        const btn = e.currentTarget;
-                        const circle = document.createElement('span');
-                        const size = btn.offsetWidth;
-                        circle.className = 'ripple';
-                        circle.style.cssText = `width:${size}px;height:${size}px;left:${e.nativeEvent.offsetX - size / 2}px;top:${e.nativeEvent.offsetY - size / 2}px;`;
-                        btn.appendChild(circle);
-                        setTimeout(() => circle.remove(), 600);
-                      }}
-                      className={`
-                        relative overflow-hidden h-11 rounded-full text-white font-bold
-                        text-sm uppercase tracking-wider transition-all duration-400
-                        ${btnState === 'idle' ? 'w-full bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98]' : ''}
-                        ${btnState === 'loading' ? 'w-11 bg-indigo-700' : ''}
-                        ${btnState === 'success' ? 'w-11 bg-green-600' : ''}
-                      `}
-                      style={{ transition: 'width 0.4s cubic-bezier(.4,0,.2,1), background 0.3s, transform 0.15s' }}
-                    >
-                      <span className={`absolute flex items-center gap-2 transition-all duration-200
-                                    ${btnState !== 'idle' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}>
-                        Create Account <ArrowRight className="h-4 w-4" />
-                      </span>
-                      <span className={`absolute transition-all duration-200
-                                    ${btnState === 'loading' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
-                        <LoaderIcon className="h-5 w-5 animate-spin" />
-                      </span>
-                      <span className={`absolute transition-all duration-200
-                                    ${btnState === 'success' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
-                        <Check className="h-5 w-5" />
-                      </span>
-                    </Button>
-                  </div>
+                  {SharedSubmitButton}
                 </div>
               </div>
             </div>
 
-            {/* Bottom on Mobile, Left on Desktop: Form Fields */}
-            <div className="md:col-span-7 space-y-6 border-r-0 md:border-r border-white/5 pl-0 md:pr-8 order-2 md:order-1">
+            {/* Left Column (Desktop) / Bottom (Mobile) */}
+            <div className={STYLES.columnLeft}>
               <div className="grid grid-cols-2 gap-3">
                 <FormField
                   control={form.control}
                   name="firstName"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-[11px] font-bold uppercase text-zinc-500 tracking-wider">First Name</FormLabel>
+                      <FormLabel className={STYLES.labelBase}>First Name</FormLabel>
                       <FormControl>
-                        <div className="relative group">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600 group-focus-within:text-indigo-400 transition-colors" />
-                          <Input
-                            className="pl-9 h-10 bg-zinc-950/50 border-zinc-800 rounded-full focus-visible:ring-indigo-500/20 text-white text-sm"
-                            placeholder="John"
-                            {...field}
-                          />
+                        <div className={STYLES.inputWrapper}>
+                          <User className={STYLES.inputIcon} />
+                          <Input className={STYLES.inputBase} placeholder="John" {...field} />
                         </div>
                       </FormControl>
-                      <FormMessage className="text-[10px]" />
+                      <FormMessage className={STYLES.messageBase} />
                     </FormItem>
                   )}
                 />
@@ -187,18 +287,14 @@ const SignupForm = () => {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-[11px] font-bold uppercase text-zinc-500 tracking-wider">Last Name</FormLabel>
+                      <FormLabel className={STYLES.labelBase}>Last Name</FormLabel>
                       <FormControl>
-                        <div className="relative group">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600 group-focus-within:text-indigo-400 transition-colors" />
-                          <Input
-                            className="pl-9 h-10 bg-zinc-950/50 border-zinc-800 rounded-full focus-visible:ring-indigo-500/20 text-white text-sm"
-                            placeholder="Doe"
-                            {...field}
-                          />
+                        <div className={STYLES.inputWrapper}>
+                          <User className={STYLES.inputIcon} />
+                          <Input className={STYLES.inputBase} placeholder="Doe" {...field} />
                         </div>
                       </FormControl>
-                      <FormMessage className="text-[10px]" />
+                      <FormMessage className={STYLES.messageBase} />
                     </FormItem>
                   )}
                 />
@@ -209,18 +305,14 @@ const SignupForm = () => {
                 name="username"
                 render={({ field }) => (
                   <FormItem className="space-y-1">
-                    <FormLabel className="text-[11px] font-bold uppercase text-zinc-500 tracking-wider">Username</FormLabel>
+                    <FormLabel className={STYLES.labelBase}>Username</FormLabel>
                     <FormControl>
-                      <div className="relative group">
-                        <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600 group-focus-within:text-indigo-400 transition-colors" />
-                        <Input
-                          className="pl-9 h-10 bg-zinc-950/50 border-zinc-800 rounded-full focus-visible:ring-indigo-500/20 text-white text-sm"
-                          placeholder="johndoe"
-                          {...field}
-                        />
+                      <div className={STYLES.inputWrapper}>
+                        <AtSign className={STYLES.inputIcon} />
+                        <Input className={STYLES.inputBase} placeholder="johndoe" {...field} />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-[10px]" />
+                    <FormMessage className={STYLES.messageBase} />
                   </FormItem>
                 )}
               />
@@ -230,18 +322,14 @@ const SignupForm = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem className="space-y-1">
-                    <FormLabel className="text-[11px] font-bold uppercase text-zinc-500 tracking-wider">Email Address</FormLabel>
+                    <FormLabel className={STYLES.labelBase}>Email Address</FormLabel>
                     <FormControl>
-                      <div className="relative group">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600 group-focus-within:text-indigo-400 transition-colors" />
-                        <Input
-                          className="pl-9 h-10 bg-zinc-950/50 border-zinc-800 rounded-full focus-visible:ring-indigo-500/20 text-white text-sm"
-                          placeholder="name@example.com"
-                          {...field}
-                        />
+                      <div className={STYLES.inputWrapper}>
+                        <Mail className={STYLES.inputIcon} />
+                        <Input className={STYLES.inputBase} placeholder="name@example.com" {...field} />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-[10px]" />
+                    <FormMessage className={STYLES.messageBase} />
                   </FormItem>
                 )}
               />
@@ -252,15 +340,11 @@ const SignupForm = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-[11px] font-bold uppercase text-zinc-500 tracking-wider">Password</FormLabel>
+                      <FormLabel className={STYLES.labelBase}>Password</FormLabel>
                       <FormControl>
-                        <PasswordInput
-                          placeholder="••••••••"
-                          className="text-white h-10 text-sm"
-                          {...field}
-                        />
+                        <PasswordInput placeholder="••••••••" className="text-white h-10 text-sm" {...field} />
                       </FormControl>
-                      <FormMessage className="text-[10px]" />
+                      <FormMessage className={STYLES.messageBase} />
                     </FormItem>
                   )}
                 />
@@ -269,59 +353,18 @@ const SignupForm = () => {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-[11px] font-bold uppercase text-zinc-500 tracking-wider">Confirm</FormLabel>
+                      <FormLabel className={STYLES.labelBase}>Confirm</FormLabel>
                       <FormControl>
-                        <PasswordInput
-                          placeholder="••••••••"
-                          className="text-white h-10 text-sm"
-                          {...field}
-                        />
+                        <PasswordInput placeholder="••••••••" className="text-white h-10 text-sm" {...field} />
                       </FormControl>
-                      <FormMessage className="text-[10px]" />
+                      <FormMessage className={STYLES.messageBase} />
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Mobile-only Submit (at bottom of fields column) */}
               <div className="md:hidden pt-4">
-                <div className={`transition-all duration-400 flex justify-center ${btnState === 'idle' ? 'w-full' : 'w-full'}`}>
-                  <Button
-                    type="submit"
-                    disabled={btnState !== 'idle'}
-                    onClick={(e) => {
-                      if (btnState !== 'idle') return;
-                      const btn = e.currentTarget;
-                      const circle = document.createElement('span');
-                      const size = btn.offsetWidth;
-                      circle.className = 'ripple';
-                      circle.style.cssText = `width:${size}px;height:${size}px;left:${e.nativeEvent.offsetX - size / 2}px;top:${e.nativeEvent.offsetY - size / 2}px;`;
-                      btn.appendChild(circle);
-                      setTimeout(() => circle.remove(), 600);
-                    }}
-                    className={`
-                      relative overflow-hidden h-11 rounded-full text-white font-bold
-                      text-sm uppercase tracking-wider transition-all duration-400
-                      ${btnState === 'idle' ? 'w-full bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98]' : ''}
-                      ${btnState === 'loading' ? 'w-11 bg-indigo-700' : ''}
-                      ${btnState === 'success' ? 'w-11 bg-green-600' : ''}
-                    `}
-                    style={{ transition: 'width 0.4s cubic-bezier(.4,0,.2,1), background 0.3s, transform 0.15s' }}
-                  >
-                    <span className={`absolute flex items-center gap-2 transition-all duration-200
-                                  ${btnState !== 'idle' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}>
-                      Create Account <ArrowRight className="h-4 w-4" />
-                    </span>
-                    <span className={`absolute transition-all duration-200
-                                  ${btnState === 'loading' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
-                      <LoaderIcon className="h-5 w-5 animate-spin" />
-                    </span>
-                    <span className={`absolute transition-all duration-200
-                                  ${btnState === 'success' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
-                      <Check className="h-5 w-5" />
-                    </span>
-                  </Button>
-                </div>
+                {SharedSubmitButton}
               </div>
             </div>
           </div>
@@ -330,19 +373,16 @@ const SignupForm = () => {
 
       <VerifyOTPModal
         isOpen={otpModal.isOpen}
-        onClose={() => setOtpModal({ ...otpModal, isOpen: false })}
+        onClose={() => setOtpModal(prev => ({ ...prev, isOpen: false }))}
         email={otpModal.email}
       />
 
-      <div className="text-center text-xs text-zinc-500">
+      <footer className={STYLES.footer.wrapper}>
         Already have an account?{" "}
-        <Link
-          to="/login"
-          className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors"
-        >
+        <Link to="/login" className={STYLES.footer.link}>
           Sign in
         </Link>
-      </div>
+      </footer>
     </div>
   );
 };
