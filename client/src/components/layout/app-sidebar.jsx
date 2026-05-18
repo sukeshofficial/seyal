@@ -114,9 +114,12 @@ export function AppSidebar() {
   useEffect(() => {
     const savedSidebar = localStorage.getItem(STORAGE_KEYS.SIDEBAR_STATE);
     if (savedSidebar !== null) {
-      setOpen(savedSidebar === "true");
+      const isOpened = savedSidebar === "true";
+      if (open !== isOpened) {
+        setOpen(isOpened);
+      }
     }
-  }, [setOpen]);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SIDEBAR_STATE, String(open));

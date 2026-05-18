@@ -7,7 +7,7 @@ import PublicRoute from "@/components/auth/PublicRoute";
 
 const DashboardPage = lazy(() => import("./pages/Dashboard"));
 const SignupPage = lazy(() => import("./pages/Signup"));
-const LoginPage = lazy(() => import("./pages/Login")); // Assuming it exists or will be built
+const LoginPage = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function App() {

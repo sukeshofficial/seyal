@@ -114,10 +114,6 @@ export const useCountdown = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, clearTimer]);
 
-  /* ---------------------------------------------------------------------- */
-  /*                                Return                                  */
-  /* ---------------------------------------------------------------------- */
-
   return {
     seconds,
     formattedTime,
